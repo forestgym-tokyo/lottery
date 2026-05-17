@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>THE FOREST GYM SPECIAL LOTTERY</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #020402;
+      color: #fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans JP", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(0, 255, 115, .28), transparent 38%),
+        radial-gradient(circle at 90% 80%, rgba(99, 255, 0, .13), transparent 30%),
+        linear-gradient(180deg, #061006 0%, #010201 100%);
+      overflow: hidden;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      height: min(820px, calc(100vh - 36px));
+      min-height: 640px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 34px;
+      border: 1px solid rgba(135, 255, 74, .42);
+      background:
+        linear-gradient(180deg, rgba(8, 20, 8, .98), rgba(1, 5, 2, .98));
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.04) inset,
+        0 0 50px rgba(0, 255, 95, .22);
+    }
+
+    .grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(140,255,80,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(140,255,80,.06) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 16%, black 84%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .glow {
+      position: absolute;
+      width: 330px;
+      height: 330px;
+      left: 50%;
+      top: 255px;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(137,255,63,.48), transparent 64%);
+      filter: blur(12px);
+      opacity: .28;
+      pointer-events: none;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      padding: 34px 24px 26px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(18px) scale(.985);
+      pointer-events: none;
+      transition: .45s ease;
+    }
+
+    .screen.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .brand {
+      text-align: center;
+      margin-top: 8px;
+      margin-bottom: 26px;
+    }
+
+    .brand-kicker {
+      font-size: 11px;
+      font-weight: 900;
+      color: #8CFF3F;
+      letter-spacing: .33em;
+      margin-bottom: 7px;
+    }
+
+    .brand-title {
+      font-size: clamp(30px, 7vw, 42px);
+      font-weight: 1000;
+      line-height: .95;
+      letter-spacing: .04em;
+      color: #fff;
+      text-shadow: 0 0 22px rgba(140,255,63,.28);
+    }
+
+    .brand-sub {
+      margin-top: 10px;
+      color: rgba(255,255,255,.65);
+      font-size: 12px;
+      letter-spacing: .24em;
+      font-weight: 800;
+    }
+
+    .copy {
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .copy h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.55;
+      font-weight: 900;
+    }
+
+    .copy p {
+      margin: 16px 0 0;
+      color: rgba(255,255,255,.76);
+      line-height: 1.8;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .envelope-stage {
+      position: relative;
+      flex: 1;
+      min-height: 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1000px;
+    }
+
+    .ring {
+      position: absolute;
+      width: 310px;
+      height: 310px;
+      border-radius: 50%;
+      border: 1px solid rgba(140,255,63,.22);
+      box-shadow:
+        0 0 38px rgba(140,255,63,.15),
+        inset 0 0 38px rgba(140,255,63,.08);
+      animation: rotate 18s linear infinite;
+    }
+
+    .ring::before,
+    .ring::after {
+      content: "";
+      position: absolute;
+      inset: 28px;
+      border-radius: 50%;
+      border: 1px dashed rgba(140,255,63,.22);
+    }
+
+    .ring::after {
+      inset: 62px;
+      border-style: solid;
+      opacity: .5;
+    }
+
+    .envelope {
+      width: 300px;
+      height: 196px;
+      position: relative;
+      transform-style: preserve-3d;
+      filter: drop-shadow(0 28px 32px rgba(0,0,0,.55));
+    }
+
+    .env-back {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #122016, #050805);
+      border: 1px solid rgba(140,255,63,.36);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.04),
+        0 0 34px rgba(140,255,63,.18);
+    }
+
+    .env-front {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, transparent 49%, rgba(140,255,63,.25) 50%, transparent 51%),
+        linear-gradient(225deg, transparent 49%, rgba(140,255,63,.20) 50%, transparent 51%),
+        linear-gradient(180deg, rgba(15,30,16,.97), rgba(4,8,5,.97));
+      border: 1px solid rgba(140,255,63,.28);
+    }
+
+    .env-flap {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 112px;
+      background: linear-gradient(180deg, #1e3a20, #071007);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: top center;
+      border-top-left-radius: 18px;
+      border-top-right-radius: 18px;
+      border: 1px solid rgba(140,255,63,.3);
+      z-index: 5;
+      transition: transform .9s cubic-bezier(.2,.9,.2,1);
+    }
+
+    .seal {
+      position: absolute;
+      left: 50%;
+      top: 51%;
+      width: 76px;
+      height: 76px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, #152815 0%, #061006 70%);
+      border: 3px solid #8CFF3F;
+      color: #8CFF3F;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      font-weight: 1000;
+      z-index: 10;
+      box-shadow:
+        0 0 24px rgba(140,255,63,.75),
+        inset 0 0 18px rgba(140,255,63,.15);
+      transition: .5s ease;
+    }
+
+    .letter {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      bottom: 18px;
+      height: 150px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #f5fff0, #d9ffd0);
+      z-index: 3;
+      transform: translateY(55px);
+      opacity: 0;
+      transition: transform .9s cubic-bezier(.2,.9,.2,1), opacity .3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #071007;
+      font-size: 18px;
+      font-weight: 1000;
+      letter-spacing: .08em;
+    }
+
+    .opening .env-flap {
+      transform: rotateX(174deg);
+    }
+
+    .opening .seal {
+      transform: translate(-50%, -50%) scale(.2);
+      opacity: 0;
+    }
+
+    .opening .letter {
+      transform: translateY(-78px);
+      opacity: 1;
+    }
+
+    .opening .burst {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .burst {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 360px;
+      height: 360px;
+      transform: translate(-50%, -50%) scale(.4);
+      opacity: 0;
+      background: radial-gradient(circle, rgba(140,255,63,.8) 0%, rgba(140,255,63,.22) 22%, transparent 63%);
+      filter: blur(4px);
+      transition: .8s ease;
+      pointer-events: none;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 18px 18px;
+      font-size: 19px;
+      font-weight: 1000;
+      color: #051005;
+      background: linear-gradient(180deg, #9CFF57, #38D900);
+      box-shadow:
+        0 0 30px rgba(140,255,63,.35),
+        inset 0 1px 0 rgba(255,255,255,.4);
+      cursor: pointer;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(.995);
+    }
+
+    .note {
+      margin-top: 17px;
+      text-align: center;
+      color: rgba(255,255,255,.6);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .result-box {
+      margin: auto 0;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .result-label {
+      color: #8CFF3F;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .3em;
+      margin-bottom: 12px;
+    }
+
+    .result-title {
+      font-size: 62px;
+      font-weight: 1000;
+      line-height: 1;
+      color: #8CFF3F;
+      text-shadow: 0 0 34px rgba(140,255,63,.6);
+    }
+
+    .result-message {
+      margin-top: 26px;
+      font-size: 19px;
+      font-weight: 800;
+      line-height: 1.9;
+      color: rgba(255,255,255,.9);
+    }
+
+    .lose .result-title {
+      color: #e5eee4;
+      text-shadow: none;
+    }
+
+    .lose .result-label {
+      color: rgba(255,255,255,.58);
+    }
+
+    .error .result-title {
+      font-size: 44px;
+      color: #fff;
+      text-shadow: none;
+    }
+
+    .confetti {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .piece {
+      position: absolute;
+      top: -20px;
+      width: 8px;
+      height: 18px;
+      border-radius: 3px;
+      background: #8CFF3F;
+      opacity: .9;
+      animation: fall 2.7s linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(900px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app" id="app">
+    <div class="grid"></div>
+    <div class="glow"></div>
+    <div class="confetti" id="confetti"></div>
+
+    <section class="screen active" id="startScreen">
+      <div class="brand">
+        <div class="brand-kicker">THE</div>
+        <div class="brand-title">FOREST<br>GYM</div>
+        <div class="brand-sub">SPECIAL LOTTERY</div>
+      </div>
+
+      <div class="copy">
+        <h1>抽選結果を<br>ご確認ください</h1>
+        <p>
+          下のボタンを押すと<br>
+          封筒が開き、結果が表示されます。
+        </p>
+      </div>
+
+      <div class="envelope-stage">
+        <div class="ring"></div>
+        <div class="burst" id="burst"></div>
+
+        <div class="envelope" id="envelope">
+          <div class="env-back"></div>
+          <div class="letter">RESULT</div>
+          <div class="env-flap"></div>
+          <div class="env-front"></div>
+          <div class="seal">F</div>
+        </div>
+      </div>
+
+      <button class="btn" id="openBtn" onclick="startDraw()">封筒を開く</button>
+
+      <div class="note">
+        このURLは1回のみ有効です。<br>
+        他の方へ共有しないでください。
+      </div>
+    </section>
+
+    <section class="screen" id="resultScreen">
+      <div class="brand">
+        <div class="brand-kicker">THE FOREST GYM</div>
+        <div class="brand-sub">LOTTERY RESULT</div>
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <div class="result-label" id="resultLabel">RESULT</div>
+        <div class="result-title" id="resultTitle">---</div>
+        <div class="result-message" id="resultMessage"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwYNT3CsfjQ4R8RaXuNoFS03YySqZvczJa0DVDOL8jJcoWJIMnyWrvclOBLTr7pgmGD/exec";
+
+    const params = new URLSearchParams(location.search);
+    const TOKEN = params.get("token") || "";
+
+    let alreadyStarted = false;
+
+    function startDraw() {
+      if (alreadyStarted) return;
+      alreadyStarted = true;
+
+      if (!TOKEN) {
+        showResult({
+          ok: false,
+          status: "invalid",
+          message: "無効なURLです。"
+        });
+        return;
+      }
+
+      document.getElementById("openBtn").disabled = true;
+      document.getElementById("openBtn").textContent = "開封中...";
+
+      document.getElementById("envelope").classList.add("opening");
+      document.getElementById("app").classList.add("opening");
+
+      setTimeout(() => {
+        callGasApi();
+      }, 1700);
+    }
+
+    function callGasApi() {
+      const callbackName = "lotteryCallback_" + Date.now();
+
+      window[callbackName] = function(res) {
+        showResult(res);
+
+        try {
+          delete window[callbackName];
+          const script = document.getElementById(callbackName);
+          if (script) script.remove();
+        } catch (e) {}
+      };
+
+      const script = document.createElement("script");
+      script.id = callbackName;
+      script.src = GAS_URL
+        + "?action=draw"
+        + "&token=" + encodeURIComponent(TOKEN)
+        + "&callback=" + encodeURIComponent(callbackName);
+
+      script.onerror = function() {
+        showResult({
+          ok: false,
+          status: "error",
+          message: "通信エラーが発生しました。"
+        });
+      };
+
+      document.body.appendChild(script);
+    }
+
+    function showResult(res) {
+      setTimeout(() => {
+        document.getElementById("startScreen").classList.remove("active");
+        document.getElementById("resultScreen").classList.add("active");
+
+        const app = document.getElementById("app");
+        const label = document.getElementById("resultLabel");
+        const title = document.getElementById("resultTitle");
+        const message = document.getElementById("resultMessage");
+
+        app.classList.remove("lose", "error");
+
+        if (!res.ok && res.status === "used") {
+          app.classList.add("lose");
+          label.textContent = "ALREADY CHECKED";
+          title.textContent = "確認済み";
+          message.innerHTML = "このURLは<br>すでに使用済みです。";
+          return;
+        }
+
+        if (res.result === "当選") {
+          label.textContent = "CONGRATULATIONS";
+          title.textContent = "当選";
+          message.innerHTML = "おめでとうございます！<br>あなたが当選しました。";
+          launchConfetti();
+          return;
+        }
+
+        if (res.result === "落選") {
+          app.classList.add("lose");
+          label.textContent = "THANK YOU";
+          title.textContent = "落選";
+          message.innerHTML = "今回は残念ながら<br>落選となりました。";
+          return;
+        }
+
+        app.classList.add("error");
+        label.textContent = "ERROR";
+        title.textContent = "確認不可";
+        message.textContent = res.message || "URLを確認できませんでした。";
+
+      }, 550);
+    }
+
+    function launchConfetti() {
+      const wrap = document.getElementById("confetti");
+      wrap.innerHTML = "";
+
+      for (let i = 0; i < 70; i++) {
+        const p = document.createElement("div");
+        p.className = "piece";
+        p.style.left = Math.random() * 100 + "%";
+        p.style.animationDelay = Math.random() * .8 + "s";
+        p.style.transform = "rotate(" + Math.random() * 360 + "deg)";
+        p.style.background = i % 3 === 0 ? "#fff" : "#8CFF3F";
+        wrap.appendChild(p);
+      }
+    }
+  </script>
+</body>
+</html>
